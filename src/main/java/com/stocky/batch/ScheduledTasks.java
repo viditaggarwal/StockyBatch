@@ -10,31 +10,24 @@ import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 @Component
 public class ScheduledTasks {
-
 	private static final SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
 	
-	
-//	public void reportCurrentTime(){
-//		System.out.println("Job started at " + sdf.format(new Date()));
-//	}
-	
-//	@Autowired
-//    JobLauncher jobLauncher;
-// 
-//    @Autowired
-//    Job processJob;
-// 
-//    @Scheduled(fixedRate=10000)
-//    public String handle() throws Exception {
-//    	System.out.println("Job started at " + sdf.format(new Date()));
-//    	JobParameters jobParameters = new JobParametersBuilder()
-//    			.addLong("time", System.currentTimeMillis())
-//    			.toJobParameters();
-//    	jobLauncher.run(processJob, jobParameters);
-//        return "Batch job has been invoked";
-//    }
+	@Autowired
+    JobLauncher jobLauncher;
+ 
+    @Autowired
+    Job processJob;
+ 
+    @Scheduled(initialDelay=900000, fixedRate=900000)
+    public String handle() throws Exception {
+		System.out.println("Job started at " + sdf.format(new Date()));
+    	JobParameters jobParameters = new JobParametersBuilder()
+    			.addLong("time", System.currentTimeMillis())
+    			.toJobParameters();
+    	jobLauncher.run(processJob, jobParameters);
+        return "Batch job has been invoked";
+    }
 }

@@ -20,12 +20,11 @@ import com.stocky.batch.model.OutputModel;
 import com.stocky.batch.model.Portfolio;
 import com.stocky.batch.model.User;
 import com.stocky.batch.util.ConnectionUtil;
-import com.stocky.batch.util.Constants;
 import com.stocky.batch.util.CurrentPriceUtil;
 import com.stocky.batch.util.ResultSetMapper;
 
 public class Processor implements ItemProcessor<ItemModel, OutputModel> {
-	private static Connection conn = ConnectionUtil.getConnection(Constants.STOCKYDATABASE);
+	private static Connection connection = ConnectionUtil.getInstance().getConnection();
 	
 	@Override
 	public OutputModel process(ItemModel data) throws Exception {
@@ -36,7 +35,7 @@ public class Processor implements ItemProcessor<ItemModel, OutputModel> {
 	
 	private OutputModel getAndUpdateCurrentPortfolioValue(User u, double portfolioValue, Account account) throws SQLException, ParseException {
         String query = "select * from portfolio where userId='"+u.getUserId()+"'";
-        PreparedStatement ps = conn.prepareStatement(query);
+        PreparedStatement ps = connection.prepareStatement(query);
         ResultSet rs = ps.executeQuery();
         ResultSetMapper<Portfolio> resultSetMapper = new ResultSetMapper<Portfolio>();
         List<Portfolio> portfolioList = resultSetMapper.mapResultSetToObjects(rs, Portfolio.class);

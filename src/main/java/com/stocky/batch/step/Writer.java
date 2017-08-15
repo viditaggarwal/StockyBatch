@@ -8,15 +8,15 @@ import org.springframework.batch.item.ItemWriter;
 import com.stocky.batch.model.OutputModel;
 import com.stocky.batch.util.AccountUtil;
 import com.stocky.batch.util.ConnectionUtil;
-import com.stocky.batch.util.Constants;
 
 public class Writer implements ItemWriter<OutputModel> {
-	private static Connection conn = ConnectionUtil.getConnection(Constants.STOCKYDATABASE);
 
+	private static Connection connection = ConnectionUtil.getInstance().getConnection();
+	
 	@Override
 	public void write(List<? extends OutputModel> result) throws Exception {
 		for(OutputModel o : result){
-			AccountUtil.updateAccount(conn, o.getUserId(), o.getAccount(), o.getPortfolioValue());
+			AccountUtil.updateAccount(connection, o.getUserId(), o.getAccount(), o.getPortfolioValue());
 		}
 	}
 }

@@ -35,7 +35,6 @@ public class AccountUtil {
     	String formattedDate = Utility.getCurrentDate();
         String query = "update account set endDate=\'"+formattedDate+"\'"
                 +" where userId=\'"+userId+"\' order by id limit 1";
-        System.out.println("Update query : " + query);
         PreparedStatement preparedStmtUpdate = conn.prepareStatement(query);
         preparedStmtUpdate.executeUpdate();
         preparedStmtUpdate.close();
@@ -51,5 +50,6 @@ public class AccountUtil {
         preparedStmt.setDate(5, null);
         preparedStmt.execute();
         preparedStmt.close();
+        conn.commit();
     }
 }
