@@ -11,6 +11,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.stocky.batch.listener.JobCompletionListener;
+import com.stocky.batch.model.ItemModel;
+import com.stocky.batch.model.OutputModel;
 import com.stocky.batch.step.Processor;
 import com.stocky.batch.step.Reader;
 import com.stocky.batch.step.Writer;
@@ -33,7 +35,7 @@ public class BatchConfig {
 
 	@Bean
 	public Step orderStep1() {
-		return stepBuilderFactory.get("orderStep1").<String, String> chunk(1)
+		return stepBuilderFactory.get("orderStep1").<ItemModel, OutputModel> chunk(1)
 				.reader(new Reader()).processor(new Processor())
 				.writer(new Writer()).build();
 	}

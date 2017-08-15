@@ -31,23 +31,8 @@ public class AccountUtil {
         return account;
     }
 
-    public static void updateAccount(Connection conn, String userId, Account account, double changeInValue, String formattedDate, Map<String, Portfolio> portfolioMap) throws SQLException, ParseException {
-        double portfolioValue = 0.0;
-
-        if(MapUtils.isEmpty(portfolioMap)){
-            System.out.println("No portfolio yet");
-            portfolioValue += changeInValue;
-        }else{
-            System.out.println("Getting value from portfolio");
-            List<Map<String, String>> stockLatest = CurrentPriceUtil.getStockPrices(new ArrayList<>(portfolioMap.keySet()));
-
-            for(Map<String, String> m : stockLatest){
-                Map.Entry<String, String> e = m.entrySet().iterator().next();
-                portfolioValue += portfolioMap.get(e.getKey()).getQuantity() * Double.valueOf(e.getValue());
-            }
-        }
-
-
+    public static void updateAccount(Connection conn, String userId, Account account, double portfolioValue) throws SQLException, ParseException {
+    	String formattedDate = Utility.getCurrentDate();
         String query = "update account set endDate=\'"+formattedDate+"\'"
                 +" where userId=\'"+userId+"\' order by id limit 1";
         System.out.println("Update query : " + query);

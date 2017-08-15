@@ -22,19 +22,19 @@ public class ScheduledTasks {
 //		System.out.println("Job started at " + sdf.format(new Date()));
 //	}
 	
-	@Autowired
-    JobLauncher jobLauncher;
- 
-    @Autowired
-    Job processJob;
- 
-    @Scheduled(fixedRate=10000)
-    public String handle() throws Exception {
-    	System.out.println("Job started at " + sdf.format(new Date()));
-    	JobParameters jobParameters = new JobParametersBuilder()
-    			.addLong("time", System.currentTimeMillis())
-    			.toJobParameters();
-    	jobLauncher.run(processJob, jobParameters);
-        return "Batch job has been invoked";
-    }
+//	@Autowired
+//    JobLauncher jobLauncher;
+// 
+//    @Autowired
+//    Job processJob;
+// 
+//    @Scheduled(fixedRate=10000)
+//    public String handle() throws Exception {
+//    	System.out.println("Job started at " + sdf.format(new Date()));
+//    	JobParameters jobParameters = new JobParametersBuilder()
+//    			.addLong("time", System.currentTimeMillis())
+//    			.toJobParameters();
+//    	jobLauncher.run(processJob, jobParameters);
+//        return "Batch job has been invoked";
+//    }
 }
