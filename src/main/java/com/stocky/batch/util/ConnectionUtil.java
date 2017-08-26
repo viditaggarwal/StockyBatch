@@ -2,6 +2,7 @@ package com.stocky.batch.util;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class ConnectionUtil {
@@ -32,6 +33,10 @@ public class ConnectionUtil {
 					+ Integer.toString(PORT) + "/" + Constants.STOCKYDATABASE, USERNAME,
 					PASSWORD);
 			con.setAutoCommit(false);
+			String query = "SET SQL_SAFE_UPDATES=0";
+			PreparedStatement preparedSt = con.prepareStatement(query);
+			preparedSt.execute();
+			con.commit();
 			return con;
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block

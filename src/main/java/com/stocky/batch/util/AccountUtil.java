@@ -4,16 +4,13 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
 
 import com.stocky.batch.model.Account;
-import com.stocky.batch.model.Portfolio;
 
 public class AccountUtil {
 
@@ -33,11 +30,16 @@ public class AccountUtil {
 
     public static void updateAccount(Connection conn, String userId, Account account, double portfolioValue) throws SQLException, ParseException {
     	String formattedDate = Utility.getCurrentDate();
-        String query = "update account set endDate=\'"+formattedDate+"\'"
-                +" where userId=\'"+userId+"\' order by id limit 1";
-        PreparedStatement preparedStmtUpdate = conn.prepareStatement(query);
-        preparedStmtUpdate.executeUpdate();
-        preparedStmtUpdate.close();
+    	String query = "SET SQL_SAFE_UPDATES=0";
+		PreparedStatement preparedSt = conn.prepareStatement(query);
+		preparedSt.execute();
+		conn.commit();
+        
+        query = "update stocky.account set endDate=\'"+formattedDate+"\'"
+                +" where userId=\'"+userId+"\' order by id desc limit 1";
+        System.out.println("Update query : " + query);
+        Statement stmt = conn.createStatement();
+        stmt.executeUpdate(query);
 
         query = "insert into account (userId, portfolioValue, buyingPower, startDate, endDate)"
                 + " values (?, ?, ?, ?, ?)";
