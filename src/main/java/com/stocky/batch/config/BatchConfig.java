@@ -8,17 +8,20 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.tomcat.jni.Proc;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecutionListener;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.item.ParseException;
 import org.springframework.batch.item.support.ListItemReader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
 
 import com.stocky.batch.listener.JobCompletionListener;
 import com.stocky.batch.model.Account;
@@ -51,11 +54,11 @@ public class BatchConfig {
 	}
 	
 	@Bean
+	@StepScope
 	public ListItemReader<ItemModel> reader(){
 		ListItemReader<ItemModel> reader = new ListItemReader<>(getUserAndAccount());
 		return reader;
 	}
-	
 	
 	private List<ItemModel> getUserAndAccount() {
 		List<ItemModel> list = new ArrayList<>();
@@ -81,10 +84,22 @@ public class BatchConfig {
 
 	@Bean
 	public Step orderStep1() {
-		return stepBuilderFactory.get("orderStep1").<ItemModel, OutputModel> chunk(1)
-				.reader(reader()).processor(new Processor())
-				.writer(new Writer()).build();
+		return stepBuilderFactory.get("orderStep1").<ItemModel, OutputModel> chunk(10)
+				.reader(reader()).processor(processor())
+				.writer(writer()).build();
 	}
+	
+	@Bean
+	@StepScope
+    public Processor processor() {
+        return new Processor();
+    }
+
+    @Bean
+    @StepScope
+    public Writer writer() {
+    	return new Writer();
+    }
 
 	@Bean
 	public JobExecutionListener listener() {
