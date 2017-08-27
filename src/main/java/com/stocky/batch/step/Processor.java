@@ -51,7 +51,7 @@ public class Processor implements ItemProcessor<ItemModel, OutputModel> {
             Map.Entry<String, String> e = m.entrySet().iterator().next();
             portfolioValue += portfolioMap.get(e.getKey()).getQuantity() * Double.valueOf(e.getValue());
         }
-        return new OutputModel(account, u.getUserId(), portfolioValue);
+        return new OutputModel(account, u.getUserId(), portfolioValue, u.getPortfolioValue());
     }
 
 }
