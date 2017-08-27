@@ -67,7 +67,7 @@ public class BatchConfig {
             		+ "from stocky.account t "
             		+ "inner join "
             		+ "(select userId, max(startDate) as MaxDate "
-            		+ "from stocky.accountgroup by userId"
+            		+ "from stocky.account group by userId"
             		+ ") tm "
             		+ "on t.userId = tm.userId "
             		+ "and t.startDate = tm.MaxDate";
