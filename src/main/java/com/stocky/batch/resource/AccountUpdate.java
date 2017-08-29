@@ -1,29 +1,5 @@
 package com.stocky.batch.resource;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import org.apache.commons.collections.CollectionUtils;
-
-import com.stocky.batch.model.Account;
-import com.stocky.batch.model.Portfolio;
-import com.stocky.batch.model.User;
-import com.stocky.batch.util.AccountUtil;
-import com.stocky.batch.util.ConnectionUtil;
-import com.stocky.batch.util.Constants;
-import com.stocky.batch.util.CurrentPriceUtil;
-import com.stocky.batch.util.ResultSetMapper;
-import com.stocky.batch.util.Utility;
-
 public class AccountUpdate {
 //	private static Connection conn = ConnectionUtil.getConnection(Constants.STOCKYDATABASE);
 //	private static AccountUpdate _instance;

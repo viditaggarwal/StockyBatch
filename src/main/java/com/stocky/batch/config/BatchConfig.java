@@ -61,31 +61,33 @@ public class BatchConfig {
 	}
 	
 	private List<ItemModel> getUserAndAccount() {
-		List<ItemModel> list = new ArrayList<>();
-		try {
-            String query = "select t.userId, t.portfolioValue, t.buyingPower "
-            		+ "from stocky.account t "
-            		+ "inner join "
-            		+ "(select userId, max(startDate) as MaxDate "
-            		+ "from stocky.account group by userId"
-            		+ ") tm "
-            		+ "on t.userId = tm.userId "
-            		+ "and t.startDate = tm.MaxDate";
-            PreparedStatement ps = connection.prepareStatement(query);
-            ResultSet rs = ps.executeQuery();
-            ResultSetMapper<User> resultSetMapper = new ResultSetMapper<User>();
-            List<User> userList = resultSetMapper.mapResultSetToObjects(rs, User.class);
-            for(User u : userList){
-                Account account = AccountUtil.findExistingAccount(connection, u.getUserId());
-                list.add(new ItemModel(u, account)); 
-            }
-            connection.commit();
-            return list;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
+		if(connection != null){
+			List<ItemModel> list = new ArrayList<>();
+			try {
+	            String query = "select t.userId, t.portfolioValue, t.buyingPower "
+	            		+ "from stocky.account t "
+	            		+ "inner join "
+	            		+ "(select userId, max(startDate) as MaxDate "
+	            		+ "from stocky.account group by userId"
+	            		+ ") tm "
+	            		+ "on t.userId = tm.userId "
+	            		+ "and t.startDate = tm.MaxDate";
+	            PreparedStatement ps = connection.prepareStatement(query);
+	            ResultSet rs = ps.executeQuery();
+	            ResultSetMapper<User> resultSetMapper = new ResultSetMapper<User>();
+	            List<User> userList = resultSetMapper.mapResultSetToObjects(rs, User.class);
+	            for(User u : userList){
+	                Account account = AccountUtil.findExistingAccount(connection, u.getUserId());
+	                list.add(new ItemModel(u, account)); 
+	            }
+	            connection.commit();
+	            return list;
+	        } catch (SQLException e) {
+	            e.printStackTrace();
+	        } catch (ParseException e) {
+	            e.printStackTrace();
+	        }
+		}
 		return null;
 	}
 

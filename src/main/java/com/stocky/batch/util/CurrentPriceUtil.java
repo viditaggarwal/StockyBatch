@@ -24,23 +24,28 @@ public class CurrentPriceUtil {
 	private final static String PRICE_ATTRIBUTE = "l_fix";
 
 	public static List<Map<String, String>> getStockPrices(List<String> inputs){
-		List<CompletableFuture<Map<String, String>>> futures = new ArrayList<CompletableFuture<Map<String, String>>>();
-		CompletableFuture<Map<String, String>> future = null;
-		
-		for (String input : inputs) {
-			future = createFuture(input);
-			futures.add(future);
-		}
-		
-		List<Map<String, String>> stockPriceList = null;
-		try {
-			stockPriceList = executeFutures(futures);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
+		try{
+			List<CompletableFuture<Map<String, String>>> futures = new ArrayList<CompletableFuture<Map<String, String>>>();
+			CompletableFuture<Map<String, String>> future = null;
+			
+			for (String input : inputs) {
+				future = createFuture(input);
+				futures.add(future);
+			}
+			
+			List<Map<String, String>> stockPriceList = null;
+			try {
+				stockPriceList = executeFutures(futures);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	
+			return stockPriceList;
+		}catch(Exception e){
 			e.printStackTrace();
 		}
-
-		return stockPriceList;
+		return null;
 	}
 
 	private static List<Map<String, String>> executeFutures(List<CompletableFuture<Map<String, String>>> futures) throws Exception {
@@ -69,19 +74,23 @@ public class CurrentPriceUtil {
 	}
 	
 	public static void setLatestPriceForPortfolio(List<Portfolio> list) {
-    	List<String> stockIdList = list.stream()
-    		              .map(Portfolio::getStockId)
-    		              .collect(Collectors.toList());
-    	Map<String, String> result = CurrentPriceUtil.getStockPrices(stockIdList).stream()
-    			.flatMap(map -> map.entrySet().stream())
-    			.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-    	
-    	Map<String, Portfolio> map = list.stream()
-    	        .collect(Collectors.toMap(Portfolio::getStockId, p->p));
-    	
-    	for(Entry<String, String> e : result.entrySet()){
-    		map.get(e.getKey()).setPrice(Double.parseDouble(e.getValue()));
-    	}
+		try{
+	    	List<String> stockIdList = list.stream()
+	    		              .map(Portfolio::getStockId)
+	    		              .collect(Collectors.toList());
+	    	Map<String, String> result = CurrentPriceUtil.getStockPrices(stockIdList).stream()
+	    			.flatMap(map -> map.entrySet().stream())
+	    			.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+	    	
+	    	Map<String, Portfolio> map = list.stream()
+	    	        .collect(Collectors.toMap(Portfolio::getStockId, p->p));
+	    	
+	    	for(Entry<String, String> e : result.entrySet()){
+	    		map.get(e.getKey()).setPrice(Double.parseDouble(e.getValue()));
+	    	}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
 	}
 
 	private static Map<String, String> getStockPriceFromGoogle(String stockId) throws Exception {

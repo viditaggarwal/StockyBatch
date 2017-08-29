@@ -14,11 +14,15 @@ public class Writer implements ItemWriter<OutputModel> {
 	private static Connection connection = ConnectionUtil.getInstance().getConnection();
 	
 	@Override
-	public void write(List<? extends OutputModel> result) throws Exception {
-		for(OutputModel o : result){
-			if(o.getPortfolioValue() != o.getOldPortfolioValue()){
-				AccountUtil.updateAccount(connection, o.getUserId(), o.getAccount(), o.getPortfolioValue());
+	public void write(List<? extends OutputModel> result){
+		try{
+			for(OutputModel o : result){
+				if(o.getPortfolioValue() != o.getOldPortfolioValue()){
+					AccountUtil.updateAccount(connection, o.getUserId(), o.getAccount(), o.getPortfolioValue());
+				}
 			}
+		}catch(Exception e){
+			e.printStackTrace();
 		}
 	}
 }
