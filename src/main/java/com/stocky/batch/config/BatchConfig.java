@@ -1,14 +1,12 @@
 	package com.stocky.batch.config;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.tomcat.jni.Proc;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecutionListener;
 import org.springframework.batch.core.Step;
@@ -21,7 +19,6 @@ import org.springframework.batch.item.support.ListItemReader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
 
 import com.stocky.batch.listener.JobCompletionListener;
 import com.stocky.batch.model.Account;
@@ -32,7 +29,6 @@ import com.stocky.batch.step.Processor;
 import com.stocky.batch.step.Writer;
 import com.stocky.batch.util.AccountUtil;
 import com.stocky.batch.util.ConnectionUtil;
-import com.stocky.batch.util.Constants;
 import com.stocky.batch.util.ResultSetMapper;
 
 @Configuration
@@ -44,7 +40,6 @@ public class BatchConfig {
 
 	@Autowired
 	public StepBuilderFactory stepBuilderFactory;
-	
 	
 	@Bean
 	public Job processJob() {
@@ -88,7 +83,7 @@ public class BatchConfig {
 	            e.printStackTrace();
 	        }
 		}
-		return null;
+		return new ArrayList<ItemModel>();
 	}
 
 	@Bean
