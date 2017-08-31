@@ -16,6 +16,7 @@ public class Writer implements ItemWriter<OutputModel> {
 	@Override
 	public void write(List<? extends OutputModel> result){
 		try{
+			System.out.println("WRITING");
 			for(OutputModel o : result){
 				if(o.getPortfolioValue() != o.getOldPortfolioValue()){
 					AccountUtil.updateAccount(connection, o.getUserId(), o.getAccount(), o.getPortfolioValue());

@@ -37,4 +37,10 @@ public class OutputModel {
 	public void setOldPortfolioValue(double oldPortfolioValue) {
 		this.oldPortfolioValue = oldPortfolioValue;
 	}
+	
+	@Override
+	public String toString() {
+		return "OutputModel [account=" + account + ", userId=" + userId + ", portfolioValue=" + portfolioValue
+				+ ", oldPortfolioValue=" + oldPortfolioValue + "]";
+	}
 }

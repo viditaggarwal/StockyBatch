@@ -41,7 +41,6 @@ public class AccountUtil {
 	        
 	        query = "update stocky.account set endDate=\'"+formattedDate+"\'"
 	                +" where userId=\'"+userId+"\' order by id desc limit 1";
-	        System.out.println("Update query : " + query);
 	        Statement stmt = conn.createStatement();
 	        stmt.executeUpdate(query);
 	

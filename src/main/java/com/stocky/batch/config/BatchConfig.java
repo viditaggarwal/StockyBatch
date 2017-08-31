@@ -33,8 +33,7 @@ import com.stocky.batch.util.ResultSetMapper;
 
 @Configuration
 public class BatchConfig {
-	private static Connection connection = ConnectionUtil.getInstance().getConnection();
-	
+
 	@Autowired
 	public JobBuilderFactory jobBuilderFactory;
 
@@ -56,9 +55,11 @@ public class BatchConfig {
 	}
 	
 	private List<ItemModel> getUserAndAccount() {
+		Connection connection = ConnectionUtil.getInstance().getConnection();
 		if(connection != null){
 			List<ItemModel> list = new ArrayList<>();
 			try {
+				System.out.println("READING");
 	            String query = "select t.userId, t.portfolioValue, t.buyingPower "
 	            		+ "from stocky.account t "
 	            		+ "inner join "
