@@ -16,9 +16,11 @@ public class Portfolio {
 	@Column(name="stockId")
 	private String stockId;
 	@Column(name="quantity")
-	private int quantity;
+	private double quantity;
 	@Column(name="price")
 	private double price;
+	@Column(name="change")
+	private boolean change;
 	
 	public String getStockId() {
 		return stockId;
@@ -26,10 +28,10 @@ public class Portfolio {
 	public void setStockId(String stockId) {
 		this.stockId = stockId;
 	}
-	public int getQuantity() {
+	public double getQuantity() {
 		return quantity;
 	}
-	public void setQuantity(int quantity) {
+	public void setQuantity(double quantity) {
 		this.quantity = quantity;
 	}
 	public double getPrice() {
@@ -43,5 +45,11 @@ public class Portfolio {
 	}
 	public void setUserId(String userId) {
 		this.userId = userId;
+	}
+	public boolean isChange() {
+		return change;
+	}
+	public void setChange(boolean change) {
+		this.change = change;
 	}
 }

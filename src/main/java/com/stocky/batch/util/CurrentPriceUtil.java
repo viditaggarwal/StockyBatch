@@ -4,8 +4,10 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -14,55 +16,76 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import org.codehaus.jettison.json.JSONObject;
+import org.json.JSONObject;
 
+import com.stocky.batch.model.Coin;
 import com.stocky.batch.model.Portfolio;
 
 public class CurrentPriceUtil {
-	private final static String PRICE_ATTRIBUTE = "l_fix";
-
-	public static List<Map<String, String>> getStockPrices(List<String> inputs){
-		try{
-			List<CompletableFuture<Map<String, String>>> futures = new ArrayList<CompletableFuture<Map<String, String>>>();
-			CompletableFuture<Map<String, String>> future = null;
-			
-			for (String input : inputs) {
-				future = createFuture(input);
-				futures.add(future);
-			}
-			
-			List<Map<String, String>> stockPriceList = null;
-			try {
-				stockPriceList = executeFutures(futures);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+	private static final String DELIMITER = "_";
+	public final static String PRICE_ATTRIBUTE = "PRICE";
+	public final static String PRICE_BEFORE_24_ATTRIBUTE = "price_before_24h";
+	public static final String CHANGE = "CHANGEPCT24HOUR";
 	
-			return stockPriceList;
-		}catch(Exception e){
+	private static Map<String, Coin> stockMap = new HashMap<String, Coin>();
+
+	public static List<Map<String, Map<String, String>>> getStockPrices(List<String> inputs){
+		List<Map<String, Map<String, String>>> stockPriceList = new ArrayList<>();
+		Iterator<String> it = inputs.iterator();
+		while(it.hasNext()){
+			String s = it.next();
+			if(stockMap.containsKey(s) && 
+					(stockMap.get(s).getTimeStamp().getTime() + 900000) >  new java.util.Date().getTime()){
+				it.remove();
+				addStockToResult(stockPriceList, s);
+			}
+		}
+		List<CompletableFuture<Void>> futures = 
+				new ArrayList<CompletableFuture<Void>>();
+		CompletableFuture<Void> future = null;
+		
+		for (String input : inputs) {
+			future = createFuture(input);
+			futures.add(future);
+		}
+		
+		try {
+			executeFutures(futures);
+			for(String input : inputs){
+				addStockToResult(stockPriceList, input);
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return null;
+
+		return stockPriceList;
 	}
 
-	private static List<Map<String, String>> executeFutures(List<CompletableFuture<Map<String, String>>> futures) throws Exception {
+	private static void addStockToResult(List<Map<String, Map<String, String>>> stockPriceList, String input) {
+		HashMap<String, Map<String, String>> individualStockMap = new HashMap<String, Map<String, String>>();
+		HashMap<String, String> value = new HashMap<String, String>();
+		value.put(PRICE_ATTRIBUTE, Double.toString(stockMap.get(input).getValue()));
+		individualStockMap.put(input, value);
+		stockPriceList.add(individualStockMap);
+	}
+
+	private static void executeFutures(
+			List<CompletableFuture<Void>> futures) throws Exception {
 		// Execute all futures in parallel
-		Stream<Map<String, String>> completedFuture = CompletableFuture
+		CompletableFuture
 				.allOf(futures.toArray(new CompletableFuture[futures.size()]))
 				.thenApply(aVoid -> futures.stream().map(CompletableFuture::join)).get();
-		return completedFuture.collect(Collectors.toList());
 		
 	}
 
-	private static CompletableFuture<Map<String, String>> createFuture(String stockId) {
+	private static CompletableFuture<Void> createFuture(String stockId) {
 
 		ExecutorService threadPool = Executors.newWorkStealingPool();
-		Supplier<Map<String, String>> asyncFunction = () -> {
+		Supplier<Void> asyncFunction = () -> {
 				try {
-					return getStockPriceFromGoogle(stockId);
+					return getStockPrice(stockId);
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -74,32 +97,30 @@ public class CurrentPriceUtil {
 	}
 	
 	public static void setLatestPriceForPortfolio(List<Portfolio> list) {
-		try{
-	    	List<String> stockIdList = list.stream()
-	    		              .map(Portfolio::getStockId)
-	    		              .collect(Collectors.toList());
-	    	Map<String, String> result = CurrentPriceUtil.getStockPrices(stockIdList).stream()
-	    			.flatMap(map -> map.entrySet().stream())
-	    			.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-	    	
-	    	Map<String, Portfolio> map = list.stream()
-	    	        .collect(Collectors.toMap(Portfolio::getStockId, p->p));
-	    	
-	    	for(Entry<String, String> e : result.entrySet()){
-	    		map.get(e.getKey()).setPrice(Double.parseDouble(e.getValue()));
-	    	}
-		}catch(Exception e){
-			e.printStackTrace();
-		}
+    	List<String> stockIdList = list.stream()
+    		              .map(Portfolio::getStockId)
+    		              .collect(Collectors.toList());
+    	Map<String, Map<String, String>> result = CurrentPriceUtil.getStockPrices(stockIdList).stream()
+    			.flatMap(map -> map.entrySet().stream())
+    			.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    	
+    	Map<String, Portfolio> map = list.stream()
+    	        .collect(Collectors.toMap(Portfolio::getStockId, p->p));
+    	
+    	for(Entry<String, Map<String, String>> e : result.entrySet()){
+    		map.get(e.getKey()).setPrice(Double.parseDouble(e.getValue().get(PRICE_ATTRIBUTE)));
+    		map.get(e.getKey()).setChange(Double.parseDouble(e.getValue().get(CHANGE)) > 0 ? true : false);
+    	}
 	}
-
-	private static Map<String, String> getStockPriceFromGoogle(String stockId) throws Exception {
-		Map<String, String> stockIdToPriceMap = new HashMap<>();
+	
+	private static Void getStockPrice(String stockId) throws Exception {
+		Map<String, Map<String, String>> stockIdToPriceMap = new HashMap<>();
+		stockId = stockId.replace("-", DELIMITER);
 		URL url = new URL(Constants.FINANCE_GET_PRICE + stockId);
 
 		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 		conn.setRequestMethod("GET");
-		conn.setRequestProperty("Accept", "application/json");
+//		conn.setRequestProperty("Accept", "application/json");
 
 		if (conn.getResponseCode() != 200) {
 			throw new RuntimeException("Failed : HTTP error code : " + conn.getResponseCode());
@@ -117,14 +138,23 @@ public class CurrentPriceUtil {
 			}
 		}
 
+		String fsym = stockId.split(DELIMITER)[0].toUpperCase();
+		String tsym = stockId.split(DELIMITER)[1].toUpperCase();
 		JSONObject responseJson = new JSONObject(sb.toString());
-		String price = responseJson.getString(PRICE_ATTRIBUTE);
-
+		responseJson = responseJson.getJSONObject("RAW").getJSONObject(fsym).getJSONObject(tsym);
+		String price = Double.toString(responseJson.getDouble(PRICE_ATTRIBUTE));
+		
+		stockMap.put(stockId, new Coin(Double.valueOf(price), new Date(new java.util.Date().getTime())));
+		
 		bufferedReader.close();
 		inputStreamReader.close();
-
 		conn.disconnect();
-		stockIdToPriceMap.put(stockId, price);
-		return stockIdToPriceMap;
+		return null;
+	}
+	
+	public static void main(String args[]){
+		List<String> l = new ArrayList<>();
+		l.add("BTC_USD");
+//		setLatestPriceForPortfolio(l);
 	}
 }

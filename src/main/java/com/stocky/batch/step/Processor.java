@@ -3,8 +3,6 @@ package com.stocky.batch.step;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,13 +42,14 @@ public class Processor implements ItemProcessor<ItemModel, OutputModel> {
 	        if(!CollectionUtils.isEmpty(portfolioList)){
 	            portfolioMap = portfolioList.stream().collect(
 	                    Collectors.toMap(Portfolio::getStockId, p -> p));
-	        }
 	
-	        List<Map<String, String>> stockLatest = CurrentPriceUtil.getStockPrices(new ArrayList<>(portfolioMap.keySet()));
-	
-	        for(Map<String, String> m : stockLatest){
-	            Map.Entry<String, String> e = m.entrySet().iterator().next();
-	            portfolioValue += portfolioMap.get(e.getKey()).getQuantity() * Double.valueOf(e.getValue());
+		        List<Map<String, Map<String, String>>> stockLatest = CurrentPriceUtil.getStockPrices(new ArrayList<>(portfolioMap.keySet()));
+		
+		        for(Map<String, Map<String, String>> m : stockLatest){
+	                Map.Entry<String, Map<String, String>> e = m.entrySet().iterator().next();
+	                portfolioValue += portfolioMap.get(e.getKey()).getQuantity() * 
+	                		Double.valueOf(e.getValue().get(CurrentPriceUtil.PRICE_ATTRIBUTE));
+	            }
 	        }
 	        return new OutputModel(account, u.getUserId(), portfolioValue, u.getPortfolioValue());
 		}catch(Exception e){
