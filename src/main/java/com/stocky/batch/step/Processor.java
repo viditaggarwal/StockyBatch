@@ -35,7 +35,6 @@ public class Processor implements ItemProcessor<ItemModel, OutputModel> {
 	
 	private OutputModel getAndUpdateCurrentPortfolioValue(User u, double portfolioValue, Account account){
 		try{
-			System.out.println("PROCESSING");
 	        String query = "select * from portfolio where userId='"+u.getUserId()+"'";
 	        PreparedStatement ps = connection.prepareStatement(query);
 	        ResultSet rs = ps.executeQuery();
