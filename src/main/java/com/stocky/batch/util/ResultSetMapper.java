@@ -77,6 +77,8 @@ public class ResultSetMapper<T> {
 			e.printStackTrace();
 		} catch (InvocationTargetException e) {
 			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 		return outputList;
 	}

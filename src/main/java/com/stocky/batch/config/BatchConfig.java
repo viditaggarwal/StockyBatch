@@ -4,9 +4,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecutionListener;
 import org.springframework.batch.core.Step;
@@ -23,8 +25,11 @@ import org.springframework.context.annotation.Configuration;
 import com.stocky.batch.listener.JobCompletionListener;
 import com.stocky.batch.model.Account;
 import com.stocky.batch.model.ItemModel;
+import com.stocky.batch.model.LeaderboardModel;
 import com.stocky.batch.model.OutputModel;
 import com.stocky.batch.model.User;
+import com.stocky.batch.step.LeaderboardProcessor;
+import com.stocky.batch.step.LeaderboardWriter;
 import com.stocky.batch.step.Processor;
 import com.stocky.batch.step.Writer;
 import com.stocky.batch.util.AccountUtil;
@@ -41,6 +46,13 @@ public class BatchConfig {
 	public StepBuilderFactory stepBuilderFactory;
 	
 	@Bean
+	public Step orderStep1() {
+		return stepBuilderFactory.get("orderStep1").<ItemModel, OutputModel> chunk(10)
+				.reader(reader()).processor(processor())
+				.writer(writer()).build();
+	}
+	
+	@Bean
 	public Job processJob() {
 		return jobBuilderFactory.get("processJob")
 				.incrementer(new RunIdIncrementer()).listener(listener())
@@ -55,7 +67,7 @@ public class BatchConfig {
 	}
 	
 	private List<ItemModel> getUserAndAccount() {
-		Connection connection = ConnectionUtil.getInstance().getConnection();
+		Connection connection = new ConnectionUtil().getConnection();
 		if(connection != null){
 			List<ItemModel> list = new ArrayList<>();
 			try {
@@ -82,16 +94,15 @@ public class BatchConfig {
 	            e.printStackTrace();
 	        } catch (ParseException e) {
 	            e.printStackTrace();
+	        }finally{
+	        	try {
+					connection.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
 	        }
 		}
 		return new ArrayList<ItemModel>();
-	}
-
-	@Bean
-	public Step orderStep1() {
-		return stepBuilderFactory.get("orderStep1").<ItemModel, OutputModel> chunk(10)
-				.reader(reader()).processor(processor())
-				.writer(writer()).build();
 	}
 	
 	@Bean
@@ -105,9 +116,113 @@ public class BatchConfig {
     public Writer writer() {
     	return new Writer();
     }
+    
+    
+    
+	@Bean
+	public Job processLeaderboardJob() {
+		return jobBuilderFactory.get("processLeaderboardJob")
+				.incrementer(new RunIdIncrementer()).listener(leaderboardListener())
+				.flow(leaderboardStep()).end().build();
+	}
+	
+	@Bean
+	@StepScope
+	public ListItemReader<LeaderboardModel> leaderboardReader(){
+		ListItemReader<LeaderboardModel> leaderboardList = new ListItemReader<>(getLeaderboardRank());
+		return leaderboardList;
+	}
+	
+	private List<LeaderboardModel> getLeaderboardRank() {
+		Connection connection = new ConnectionUtil().getConnection();
+		if(connection != null){
+			try {
+				System.out.println("LEADERBOARD READING");
+	            String query = "select a5.userId, a5.firstName, "
+	            		+ "a5.lastName, a5.emailId, a6.portfolioValue, "
+	            		+ "a6.buyingPower from stocky.user a5 right join "
+	            		+ "(select a4.* from (select a3.* from (select "
+	            		+ "a1.* from stocky.account a1 left join stocky.account "
+	            		+ "a2 ON (a1.userId = a2.userId and a1.id < a2.id) "
+	            		+ "where a2.id is null) a3 order by "
+	            		+ "(a3.portfolioValue+a3.buyingPower) desc ) a4 join "
+	            		+ "(select distinct(userId) from stocky.transaction)"
+	            		+ " t1 ON (t1.userId = a4.userId)  order by "
+	            		+ "(a4.portfolioValue+a4.buyingPower)desc) a6 "
+	            		+ "on a6.userId=a5.userId order by (a6.portfolioValue+a6.buyingPower) desc;";
+	            PreparedStatement ps = connection.prepareStatement(query);
+	            ResultSet rs = ps.executeQuery();
+	            ResultSetMapper<LeaderboardModel> resultSetMapper = new ResultSetMapper<LeaderboardModel>();
+	            List<LeaderboardModel> leaderboardList = resultSetMapper.mapResultSetToObjects(rs, LeaderboardModel.class);
+	            connection.commit();
+	            if(!CollectionUtils.isEmpty(leaderboardList)){
+	            	truncateLeaderboard();
+	            	return leaderboardList;
+	            }else
+	            	return new ArrayList<LeaderboardModel>();
+	        } catch (SQLException e) {
+	            e.printStackTrace();
+	        } catch (ParseException e) {
+	            e.printStackTrace();
+	        }finally{
+	        	try {
+					connection.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+	        }
+		}
+		return new ArrayList<LeaderboardModel>();
+	}
+	
+    private void truncateLeaderboard() {
+    	Connection connection = new ConnectionUtil().getConnection();
+		if(connection != null){
+			try {
+				Statement statement = connection.createStatement();
+				statement.executeUpdate("TRUNCATE leaderboard");
+				connection.commit();
+	        } catch (SQLException e) {
+	            e.printStackTrace();
+	        } catch (ParseException e) {
+	            e.printStackTrace();
+	        }finally{
+	        	try {
+					connection.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+	        }
+		}
+	}
 
 	@Bean
+    @StepScope
+    public LeaderboardProcessor leaderboardProcessor() {
+        return new LeaderboardProcessor();
+    }
+
+    @Bean
+    @StepScope
+    public LeaderboardWriter leaderboardWriter() {
+    	return new LeaderboardWriter();
+    }
+    
+	
+	@Bean
+	public Step leaderboardStep() {
+		return stepBuilderFactory.get("leaderboardStep").<LeaderboardModel, LeaderboardModel> chunk(100)
+				.reader(leaderboardReader()).processor(leaderboardProcessor())
+				.writer(leaderboardWriter()).build();
+	}
+	
+	@Bean
 	public JobExecutionListener listener() {
+		return new JobCompletionListener();
+	}
+	
+	@Bean
+	public JobExecutionListener leaderboardListener() {
 		return new JobCompletionListener();
 	}
 

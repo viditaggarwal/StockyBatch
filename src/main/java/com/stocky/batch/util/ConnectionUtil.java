@@ -14,16 +14,16 @@ public class ConnectionUtil {
 
 	private static final int PORT = 3306;
 	
-	private static ConnectionUtil m_instance;
-	
-	public static ConnectionUtil getInstance(){
-		if(m_instance == null){
-			synchronized (ConnectionUtil.class) {
-				m_instance = new ConnectionUtil();	
-			}
-		}
-		return m_instance;
-	}
+//	private static ConnectionUtil m_instance;
+//	
+//	public static ConnectionUtil getInstance(){
+//		if(m_instance == null){
+//			synchronized (ConnectionUtil.class) {
+//				m_instance = new ConnectionUtil();	
+//			}
+//		}
+//		return m_instance;
+//	}
 
 	public Connection getConnection() {
 		try {

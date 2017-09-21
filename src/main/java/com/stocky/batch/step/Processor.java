@@ -3,6 +3,7 @@ package com.stocky.batch.step;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,8 +23,6 @@ import com.stocky.batch.util.CurrentPriceUtil;
 import com.stocky.batch.util.ResultSetMapper;
 
 public class Processor implements ItemProcessor<ItemModel, OutputModel> {
-	private static Connection connection = ConnectionUtil.getInstance().getConnection();
-	
 	@Override
 	public OutputModel process(ItemModel data) throws Exception {
 		if(data != null)
@@ -32,6 +31,7 @@ public class Processor implements ItemProcessor<ItemModel, OutputModel> {
 	}
 	
 	private OutputModel getAndUpdateCurrentPortfolioValue(User u, double portfolioValue, Account account){
+		Connection connection = new ConnectionUtil().getConnection();
 		try{
 	        String query = "select * from portfolio where userId='"+u.getUserId()+"'";
 	        PreparedStatement ps = connection.prepareStatement(query);
@@ -54,7 +54,14 @@ public class Processor implements ItemProcessor<ItemModel, OutputModel> {
 	        return new OutputModel(account, u.getUserId(), portfolioValue, u.getPortfolioValue());
 		}catch(Exception e){
 			e.printStackTrace();
-		}
+		}finally{
+        	try {
+				connection.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+        }
+		
 		return null;
     }
 
