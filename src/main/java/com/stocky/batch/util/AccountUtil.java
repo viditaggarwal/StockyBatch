@@ -43,11 +43,19 @@ public class AccountUtil {
 	                +" where userId=\'"+userId+"\' order by id desc limit 1";
 	        Statement stmt = conn.createStatement();
 	        stmt.executeUpdate(query);
-	
+	        
+	        query = "update stocky.user set portfolioValue= ? and buyingPower=?"
+	                +" where userId=\'"+userId+"\'";
+	        PreparedStatement preparedStmt = conn.prepareStatement(query);
+	        preparedStmt.setDouble(1, portfolioValue);
+	        preparedStmt.setDouble(2, account.getBuyingPower());
+	        preparedStmt.executeUpdate();
+	        preparedStmt.close();
+	        
 	        query = "insert into account (userId, portfolioValue, buyingPower, startDate, endDate)"
 	                + " values (?, ?, ?, ?, ?)";
 	
-	        PreparedStatement preparedStmt = conn.prepareStatement(query);
+	        preparedStmt = conn.prepareStatement(query);
 	        preparedStmt.setString(1, userId);
 	        preparedStmt.setDouble(2, portfolioValue);
 	        preparedStmt.setDouble(3, account.getBuyingPower());
