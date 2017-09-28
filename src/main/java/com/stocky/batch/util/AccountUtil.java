@@ -44,7 +44,7 @@ public class AccountUtil {
 	        Statement stmt = conn.createStatement();
 	        stmt.executeUpdate(query);
 	        
-	        query = "update stocky.user set portfolioValue= "+portfolioValue+" and buyingPower="+account.getBuyingPower()
+	        query = "update stocky.user set portfolioValue="+account.getPortfolioValue()+", buyingPower="+account.getBuyingPower()
 	                +" where userId=\'"+userId+"\'";
 	        PreparedStatement preparedStmt = conn.prepareStatement(query);
 	        preparedStmt.executeUpdate();

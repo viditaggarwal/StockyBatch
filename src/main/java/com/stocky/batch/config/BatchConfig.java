@@ -138,25 +138,13 @@ public class BatchConfig {
 		if(connection != null){
 			try {
 				System.out.println("LEADERBOARD READING");
-	            String query = "select a5.userId, a5.firstName, "
-	            		+ "a5.lastName, a5.emailId, a6.portfolioValue, "
-	            		+ "a6.buyingPower from stocky.user a5 right join "
-	            		+ "(select a4.* from (select a3.* from (select "
-	            		+ "a1.* from stocky.account a1 left join stocky.account "
-	            		+ "a2 ON (a1.userId = a2.userId and a1.id < a2.id) "
-	            		+ "where a2.id is null) a3 order by "
-	            		+ "(a3.portfolioValue+a3.buyingPower) desc ) a4 join "
-	            		+ "(select distinct(userId) from stocky.transaction)"
-	            		+ " t1 ON (t1.userId = a4.userId)  order by "
-	            		+ "(a4.portfolioValue+a4.buyingPower)desc) a6 "
-	            		+ "on a6.userId=a5.userId order by (a6.portfolioValue+a6.buyingPower) desc;";
+	            String query = "select userId, portfolioValue, buyingPower, (portfolioValue + buyingPower) as totalValue from stocky.user "+
+	            				"order by totalValue desc";
 	            PreparedStatement ps = connection.prepareStatement(query);
 	            ResultSet rs = ps.executeQuery();
 	            ResultSetMapper<LeaderboardModel> resultSetMapper = new ResultSetMapper<LeaderboardModel>();
 	            List<LeaderboardModel> leaderboardList = resultSetMapper.mapResultSetToObjects(rs, LeaderboardModel.class);
-	            connection.commit();
 	            if(!CollectionUtils.isEmpty(leaderboardList)){
-	            	truncateLeaderboard();
 	            	return leaderboardList;
 	            }else
 	            	return new ArrayList<LeaderboardModel>();
