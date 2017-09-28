@@ -25,12 +25,13 @@ public class LeaderboardWriter implements ItemWriter<LeaderboardModel> {
 			System.out.println("LEADERBOARD WRITING");
 			PreparedStatement ps = null;
 			for (LeaderboardModel leaderboard: result) {
-				String sql = "update stocky.user set rank="+(rank++)+
+				String sql = "update stocky.user set rank="+(rank)+
 						", portfolioValue="+leaderboard.getPortfolioValue()+
 						", buyingPower="+leaderboard.getBuyingPower()+
 						" where userId=\""+leaderboard.getUserId()+"\"";
 				ps = connection.prepareStatement(sql);
 				ps.addBatch();
+				rank++;
 			}
 			ps.executeBatch();
 			ps.close();
