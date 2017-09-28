@@ -12,21 +12,24 @@ import com.stocky.batch.util.ConnectionUtil;
 
 public class LeaderboardWriter implements ItemWriter<LeaderboardModel> {
 
+	private float rank;
+	
+	public LeaderboardWriter(Float x) {
+		this.rank = x;
+	}
+	
 	@Override
 	public void write(List<? extends LeaderboardModel> result){
 		Connection connection = new ConnectionUtil().getConnection();
 		try{
 			System.out.println("LEADERBOARD WRITING");
-			String sql = "insert into leaderboard (userId, firstName, lastName, emailId, portfolioValue, buyingPower)"
-					+ " values (?, ?, ?, ?, ?, ?)";
-			PreparedStatement ps = connection.prepareStatement(sql);
+			PreparedStatement ps = null;
 			for (LeaderboardModel leaderboard: result) {
-				ps.setString(1, leaderboard.getUserId());
-				ps.setString(2, leaderboard.getFirstName());
-				ps.setString(3, leaderboard.getLastName());
-				ps.setString(4, leaderboard.getEmailId());
-				ps.setDouble(5, leaderboard.getPortfolioValue());
-				ps.setDouble(6, leaderboard.getBuyingPower());
+				String sql = "update stocky.user set rank="+(rank++)+
+						", portfolioValue="+leaderboard.getPortfolioValue()+
+						", buyingPower="+leaderboard.getBuyingPower()+
+						" where userId=\""+leaderboard.getUserId()+"\"";
+				ps = connection.prepareStatement(sql);
 				ps.addBatch();
 			}
 			ps.executeBatch();

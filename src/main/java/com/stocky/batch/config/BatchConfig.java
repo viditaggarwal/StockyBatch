@@ -205,13 +205,14 @@ public class BatchConfig {
     @Bean
     @StepScope
     public LeaderboardWriter leaderboardWriter() {
-    	return new LeaderboardWriter();
+    	Float x = 1.0f;
+    	return new LeaderboardWriter(x);
     }
     
 	
 	@Bean
 	public Step leaderboardStep() {
-		return stepBuilderFactory.get("leaderboardStep").<LeaderboardModel, LeaderboardModel> chunk(100)
+		return stepBuilderFactory.get("leaderboardStep").<LeaderboardModel, LeaderboardModel> chunk(1)
 				.reader(leaderboardReader()).processor(leaderboardProcessor())
 				.writer(leaderboardWriter()).build();
 	}

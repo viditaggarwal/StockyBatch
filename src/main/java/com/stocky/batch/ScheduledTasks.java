@@ -21,7 +21,7 @@ public class ScheduledTasks {
     @Autowired
     Job processJob;
  
-    @Scheduled(initialDelay=900000, fixedRate=900000)
+    @Scheduled(initialDelay=300000, fixedRate=300000)
     public String handle() throws Exception {
 		System.out.println("Job started at " + sdf.format(new Date()));
     	JobParameters jobParameters = new JobParametersBuilder()
