@@ -200,7 +200,7 @@ public class BatchConfig {
 	
 	@Bean
 	public Step leaderboardStep() {
-		return stepBuilderFactory.get("leaderboardStep").<LeaderboardModel, LeaderboardModel> chunk(1)
+		return stepBuilderFactory.get("leaderboardStep").<LeaderboardModel, LeaderboardModel> chunk(100)
 				.reader(leaderboardReader()).processor(leaderboardProcessor())
 				.writer(leaderboardWriter()).build();
 	}
