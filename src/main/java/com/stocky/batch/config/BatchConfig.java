@@ -163,27 +163,6 @@ public class BatchConfig {
 		return new ArrayList<LeaderboardModel>();
 	}
 	
-    private void truncateLeaderboard() {
-    	Connection connection = new ConnectionUtil().getConnection();
-		if(connection != null){
-			try {
-				Statement statement = connection.createStatement();
-				statement.executeUpdate("TRUNCATE leaderboard");
-				connection.commit();
-	        } catch (SQLException e) {
-	            e.printStackTrace();
-	        } catch (ParseException e) {
-	            e.printStackTrace();
-	        }finally{
-	        	try {
-					connection.close();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-	        }
-		}
-	}
-
 	@Bean
     @StepScope
     public LeaderboardProcessor leaderboardProcessor() {
