@@ -7,10 +7,10 @@ import java.sql.SQLException;
 
 public class ConnectionUtil {
 
-	private static final String PASSWORD = "password";
+	private static final String PASSWORD = "9111@Ykcots";
 	private static final String USERNAME = "remoteu";
 
-	private static final String DATABASE_URL = "ec2-52-41-67-9.us-west-2.compute.amazonaws.com";
+	private static final String DATABASE_URL = "ec2-34-216-62-227.us-west-2.compute.amazonaws.com";
 
 	private static final int PORT = 3306;
 	
